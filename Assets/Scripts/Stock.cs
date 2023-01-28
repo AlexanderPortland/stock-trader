@@ -27,13 +27,18 @@ public class Stock : MonoBehaviour
                                             Int64.Parse(commas[2]) //volume
                                             );
             } else {
-                Debug.Log("line \"" + lines[i + 1] + "\" found which doesnt have length 6");
+                //Debug.LogWarning("line \"" + lines[i + 1] + "\" found which doesnt have length 6");
+                //(which is normal for the end of nasdaq downloaded csv files)
             }
         }
     }
 
+    public float TryGetCloseOnDay(int day){
+        if (day < days.Length) return days[day].close;
+        else return -1f;
+    }
+
     public float DollarStringToFloat(string s){
-        Debug.Log(s.Trim(new Char[]{ '$' }));
         return float.Parse(
             s.Trim(new Char[]{ '$' }));
     }
@@ -86,7 +91,6 @@ public struct Date {
     }
     
     public Date(string date, string format){
-        Debug.Log(date);
         string DATE_SEPERATOR = "/";
         string[] slashes = date.Split(DATE_SEPERATOR);
         if (format == "mdy"){

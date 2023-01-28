@@ -8,14 +8,20 @@ public class StockDataManager : MonoBehaviour
 {
     public string[] symbols;
     public List<Stock> stocks;
+    public int currentDay = 5;
+
+    private TickerManager tickerManager;
 
     public void Start(){
         symbols = InitializeSymbols(Directory.GetCurrentDirectory() + "/assets/scripts/data/");
         stocks = InitializeStocks(symbols);
+        tickerManager = FindObjectOfType<TickerManager>();
+        tickerManager.UpdateTextContent(StockSummary(stocks));
     }
 
     //parses data from data files and for accessability
     public List<Stock> InitializeStocks(string[] symbolsToInitialize){
+        Debug.Log("intializing stocks");
         List<Stock> los = new List<Stock>();
         foreach(string symbol in symbolsToInitialize){
             Stock newStock = new Stock(symbol);
@@ -25,16 +31,30 @@ public class StockDataManager : MonoBehaviour
     }
 
     public string[] InitializeSymbols(string directoryPath){
+        Debug.Log("intializing symbols");
         string[] files = Directory.GetFiles(directoryPath);
         List<string> names = new List<string>();
         for(int i = 0; i < files.Length; i++){
             string s = Path.GetFileName(files[i]);
             if (ValidFileName(s)){
-                Debug.Log(files[i]);
                 names.Add(s.Substring(0, s.IndexOf('.')));
             }
         }
         return names.ToArray();
+    }
+
+    public string StockSummary(List<Stock> stocksToSummarize){
+        int NUM_OF_SPACES = 10;
+        string totalSummary = "";
+        for (int i = 0; i < stocksToSummarize.Count(); i++){
+            Stock stock = stocksToSummarize[i];
+            float close = stock.TryGetCloseOnDay(currentDay);
+            if (close > 0){
+                string mySummary = stock.symbol + " | $" + close + new string(' ', NUM_OF_SPACES);
+                totalSummary += mySummary;
+            }
+        }
+        return totalSummary;
     }
 
     public bool ValidFileName(string fileName){
