@@ -5,18 +5,20 @@ using TMPro;
 
 public class TickerManager : MonoBehaviour
 {
-    public GameObject tickerText;
+    private GameObject tickerText;
+    private GameObject tickerText1;
     public List<GameObject> texts;
-    private float minX;
+    private float minX = 25f;
     public float scrollSpeed;
     private float offset;
     public float textWidth;
 
     public void Awake(){
         tickerText = GameObject.Find("TickerText");
+        tickerText1 = GameObject.Find("TickerText1");
         if (tickerText == null) Debug.LogError("no text with name \"TickerText\" found");
+        if (tickerText1 == null) Debug.LogError("no text with name \"TickerText1\" found");
         UpdateTextWidth();
-        //texts.Add(tickerText)
     }
 
     public void Update(){
@@ -28,12 +30,17 @@ public class TickerManager : MonoBehaviour
         Vector3 lastPosition = tickerText.transform.position;
         float x = (offset % (2 * textWidth));
         float newX = x - minX;
-        Debug.Log(x);
         tickerText.transform.position = new Vector3(newX, lastPosition.y, lastPosition.z);
+
+        Vector3 lastPosition1 = tickerText1.transform.position;
+        float x1 = ((offset + textWidth) % (2 * textWidth));
+        float newX1 = x1 - minX;
+        tickerText1.transform.position = new Vector3(newX1, lastPosition.y, lastPosition.z);
     }
 
     public void UpdateTextContent(string s){
         tickerText.GetComponent<TextMeshProUGUI>().text = s; 
+        tickerText1.GetComponent<TextMeshProUGUI>().text = s; 
         UpdateTextWidth();
     }
 

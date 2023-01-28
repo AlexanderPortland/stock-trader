@@ -16,7 +16,7 @@ public class StockDataManager : MonoBehaviour
         symbols = InitializeSymbols(Directory.GetCurrentDirectory() + "/assets/scripts/data/");
         stocks = InitializeStocks(symbols);
         tickerManager = FindObjectOfType<TickerManager>();
-        tickerManager.UpdateTextContent(StockSummary(stocks));
+            tickerManager.UpdateTextContent(StockSummary(stocks));
     }
 
     //parses data from data files and for accessability
@@ -50,11 +50,11 @@ public class StockDataManager : MonoBehaviour
             Stock stock = stocksToSummarize[i];
             float close = stock.TryGetCloseOnDay(currentDay);
             if (close > 0){
-                string mySummary = stock.symbol + " | $" + close + new string(' ', NUM_OF_SPACES);
+                string mySummary = new string(' ', NUM_OF_SPACES) + stock.symbol + " | $" + close;
                 totalSummary += mySummary;
             }
         }
-        return totalSummary;
+        return "->" + totalSummary;
     }
 
     public bool ValidFileName(string fileName){
