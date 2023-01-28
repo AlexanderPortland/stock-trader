@@ -26,7 +26,11 @@ public class UIManager : MonoBehaviour
     }
 
     public void UpdateDayUI(int newDay){
-        dateText.text = stockDataManager.stocks[0].days[newDay].DateToString();
+        Stock s = stockDataManager.stocks[0];
+        //Debug.Log(s.name);
+        Day d = s.days[newDay];
+        Date date = d.date;
+        dateText.text = d.DateToString();
         tickerManager.UpdateTextContent(stockDataManager.GetStockSummary());
     }
 
@@ -46,6 +50,7 @@ public class UIManager : MonoBehaviour
     }
 
     public void UpdateDescriptionText(){
+        Color ERROR_COLOR = new Color(1f, 0.345f, 0.443f);
         if (quantityField.text == "") {
             descriptionText.text = "";
             return;
@@ -56,7 +61,25 @@ public class UIManager : MonoBehaviour
         float price = stockDataManager.FindStock(symbol).TryGetCloseOnDay(stockDataManager.currentDay);
         float total = quantity * price;
         string text = quantity + " shares of " + symbol + " at $" + price + " each = $" + total + " total";
-        if (price <= 0) text = "sorry, there is no price data for " + symbol + " on " + stockDataManager.stocks[0].days[stockDataManager.currentDay].DateToString();
+        descriptionText.color = new Color(1f, 1f, 1f);
+        if (price <= 0) {
+            text = "sorry, there is no price data for " + symbol + " on " + stockDataManager.stocks[0].days[stockDataManager.currentDay].DateToString();
+            descriptionText.color = ERROR_COLOR;
+        }
         descriptionText.text = text;
+    }
+
+    public void RequestBuy(){
+        int quantity = Int32.Parse(quantityField.text);
+        string symbol = stockDropdown.options[stockDropdown.value].text;
+        float price = stockDataManager.FindStock(symbol).TryGetCloseOnDay(stockDataManager.currentDay);
+        if (price > 0) stockDataManager.Buy(symbol, quantity);
+    }
+
+    public void RequestSell(){
+        int quantity = Int32.Parse(quantityField.text);
+        string symbol = stockDropdown.options[stockDropdown.value].text;
+        float price = stockDataManager.FindStock(symbol).TryGetCloseOnDay(stockDataManager.currentDay);
+        if (price > 0) stockDataManager.Sell(symbol, quantity);
     }
 }

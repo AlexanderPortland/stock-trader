@@ -12,7 +12,6 @@ public class Stock : MonoBehaviour
     public Stock(string symbol){
         this.symbol = symbol;
         string path = symbol + ".csv";
-        Debug.Log(symbol);
         StreamReader reader = File.OpenText(Directory.GetCurrentDirectory() + "/assets/scripts/data/" + path);
         string[] lines = reader.ReadToEnd().Split('\n');
 
@@ -55,7 +54,7 @@ public class Stock : MonoBehaviour
 }
 
 public struct Day {
-    Date date;
+    public Date date;
     public float close;
     public float open;
     public float high;

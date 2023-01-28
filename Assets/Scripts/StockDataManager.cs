@@ -9,7 +9,8 @@ public class StockDataManager : MonoBehaviour
 {
     public string[] symbols;
     public List<Stock> stocks;
-    public int currentDay = 5;
+    public List<Holding> holdings;
+    public int currentDay = 500;
     public UIManager uIManager;
 
     public void Start(){
@@ -44,7 +45,8 @@ public class StockDataManager : MonoBehaviour
     }
 
     public void InitializeUI(){
-        UpdateDay(5);
+        uIManager.InitializeUI();
+        UpdateDay(2000);
     }
 
     public string GetStockSummary(){
@@ -68,11 +70,11 @@ public class StockDataManager : MonoBehaviour
         return null;
     }
 
-    public void Buy(){
+    public void Buy(string symbol, float quantity){
 
     }
 
-    public void Sell(){
+    public void Sell(string symbol, float quantity){
 
     }
 
@@ -84,12 +86,19 @@ public class StockDataManager : MonoBehaviour
     }
 
     public void NextDay(){
-        UpdateDay(currentDay + 1);
+        UpdateDay(currentDay + 10);
     }
 
     public void UpdateDay(int newDay){
         currentDay = newDay;
         uIManager.UpdateDayUI(newDay);
-        uIManager.InitializeUI();
+    }
+
+    public void RemoveEmptyHoldings(){
+        foreach(Holding h in holdings){
+            if (h.buyQuantity == 0){
+                holdings.Remove(h);
+            }
+        }
     }
 }

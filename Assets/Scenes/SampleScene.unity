@@ -642,6 +642,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   symbols: []
   stocks: []
+  holdings: []
   currentDay: 5
   uIManager: {fileID: 0}
 --- !u!4 &331972841
@@ -3692,7 +3693,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -418.5724, y: 232}
+  m_AnchoredPosition: {x: -430, y: 238}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1839577053
