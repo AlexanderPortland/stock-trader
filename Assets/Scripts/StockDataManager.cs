@@ -10,17 +10,13 @@ public class StockDataManager : MonoBehaviour
     public string[] symbols;
     public List<Stock> stocks;
     public int currentDay = 5;
-
-    private TickerManager tickerManager;
-    private TextMeshProUGUI dateText;
+    public UIManager uIManager;
 
     public void Start(){
         symbols = InitializeSymbols(Directory.GetCurrentDirectory() + "/assets/scripts/data/");
         stocks = InitializeStocks(symbols);
-        tickerManager = FindObjectOfType<TickerManager>();
-        tickerManager.UpdateTextContent(StockSummary(stocks));
-        dateText = GameObject.Find("DateText").GetComponent<TextMeshProUGUI>();
-        UpdateDay(5);
+        uIManager = GetComponent<UIManager>();
+        InitializeUI();
     }
 
     //parses data from data files and for accessability
@@ -47,18 +43,37 @@ public class StockDataManager : MonoBehaviour
         return names.ToArray();
     }
 
-    public string StockSummary(List<Stock> stocksToSummarize){
+    public void InitializeUI(){
+        UpdateDay(5);
+    }
+
+    public string GetStockSummary(){
         int NUM_OF_SPACES = 10;
         string totalSummary = "";
-        for (int i = 0; i < stocksToSummarize.Count(); i++){
-            Stock stock = stocksToSummarize[i];
+        for (int i = 0; i < stocks.Count(); i++){
+            Stock stock = stocks[i];
             float close = stock.TryGetCloseOnDay(currentDay);
             if (close > 0){
                 string mySummary = new string(' ', NUM_OF_SPACES) + stock.symbol + " | $" + string.Format("{0:0.00}", close);
                 totalSummary += mySummary;
             }
         }
-        return "->" + totalSummary;
+        return "." + totalSummary;
+    }
+
+    public Stock FindStock(string symbol){
+        foreach(Stock stock in stocks){
+            if(stock.symbol == symbol) return stock;
+        }
+        return null;
+    }
+
+    public void Buy(){
+
+    }
+
+    public void Sell(){
+
     }
 
     public bool ValidFileName(string fileName){
@@ -74,7 +89,7 @@ public class StockDataManager : MonoBehaviour
 
     public void UpdateDay(int newDay){
         currentDay = newDay;
-        dateText.text = stocks[0].days[newDay].DateToString();
-        tickerManager.UpdateTextContent(StockSummary(stocks));
+        uIManager.UpdateDayUI(newDay);
+        uIManager.InitializeUI();
     }
 }

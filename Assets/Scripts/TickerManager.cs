@@ -5,8 +5,8 @@ using TMPro;
 
 public class TickerManager : MonoBehaviour
 {
-    private GameObject tickerText;
-    private GameObject tickerText1;
+    public GameObject tickerText;
+    public GameObject tickerText1;
     public List<GameObject> texts;
     private float minX = 25f;
     public float scrollSpeed;

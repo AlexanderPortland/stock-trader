@@ -12,6 +12,7 @@ public class Stock : MonoBehaviour
     public Stock(string symbol){
         this.symbol = symbol;
         string path = symbol + ".csv";
+        Debug.Log(symbol);
         StreamReader reader = File.OpenText(Directory.GetCurrentDirectory() + "/assets/scripts/data/" + path);
         string[] lines = reader.ReadToEnd().Split('\n');
 
@@ -27,7 +28,7 @@ public class Stock : MonoBehaviour
                                             Int64.Parse(commas[2]) //volume
                                             );
             } else {
-                //Debug.LogWarning("line \"" + lines[i + 1] + "\" found which doesnt have length 6");
+                Debug.LogWarning("line \"" + lines[i + 1] + "\" found which doesnt have length 6");
                 //(which is normal for the end of nasdaq downloaded csv files)
             }
         }
