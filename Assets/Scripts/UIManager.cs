@@ -9,20 +9,26 @@ public class UIManager : MonoBehaviour
 {
     public StockDataManager stockDataManager;    
     public TickerManager tickerManager;
+    public AssetHolder assetHolder;
+
     public TextMeshProUGUI dateText;
     public TMP_Dropdown stockDropdown;
     public TMP_InputField quantityField;
     public TextMeshProUGUI descriptionText;
+    public TextMeshProUGUI cashText;
 
     // Start is called before the first frame update
     void Start() {
         stockDataManager = GetComponent<StockDataManager>();
         tickerManager = FindObjectOfType<TickerManager>();
+        assetHolder = FindObjectOfType<AssetHolder>();
+
         tickerManager.UpdateTextContent(stockDataManager.GetStockSummary());
         dateText = GameObject.Find("DateText").GetComponent<TextMeshProUGUI>();
         stockDropdown = GameObject.Find("StockChoices").GetComponent<TMP_Dropdown>();
         quantityField = GameObject.Find("QuantityField").GetComponent<TMP_InputField>();
         descriptionText = GameObject.Find("DescriptionText").GetComponent<TextMeshProUGUI>();
+        cashText = GameObject.Find("CashText").GetComponent<TextMeshProUGUI>();
     }
 
     public void UpdateDayUI(int newDay){
@@ -42,6 +48,7 @@ public class UIManager : MonoBehaviour
         }
         stockDropdown.options = options;
         ValidateQuantityField();
+        UpdateAssetsUI();
     }
 
     public void ValidateQuantityField(){
@@ -67,6 +74,10 @@ public class UIManager : MonoBehaviour
             descriptionText.color = ERROR_COLOR;
         }
         descriptionText.text = text;
+    }
+
+    public void UpdateAssetsUI(){
+        cashText.text = "Cash: " + assetHolder.GetCashString();
     }
 
     public void RequestBuy(){

@@ -9,7 +9,6 @@ public class StockDataManager : MonoBehaviour
 {
     public string[] symbols;
     public List<Stock> stocks;
-    public List<Holding> holdings;
     public int currentDay = 500;
     public UIManager uIManager;
 
@@ -71,11 +70,11 @@ public class StockDataManager : MonoBehaviour
     }
 
     public void Buy(string symbol, float quantity){
-
+        uIManager.UpdateAssetsUI();
     }
 
     public void Sell(string symbol, float quantity){
-
+        uIManager.UpdateAssetsUI();
     }
 
     public bool ValidFileName(string fileName){
@@ -92,13 +91,5 @@ public class StockDataManager : MonoBehaviour
     public void UpdateDay(int newDay){
         currentDay = newDay;
         uIManager.UpdateDayUI(newDay);
-    }
-
-    public void RemoveEmptyHoldings(){
-        foreach(Holding h in holdings){
-            if (h.buyQuantity == 0){
-                holdings.Remove(h);
-            }
-        }
     }
 }
