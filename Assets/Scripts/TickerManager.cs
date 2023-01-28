@@ -26,16 +26,16 @@ public class TickerManager : MonoBehaviour
     }
 
     void UpdatePosition(){
-        offset -= scrollSpeed * Time.deltaTime;
+        offset += scrollSpeed * Time.deltaTime;
         Vector3 lastPosition = tickerText.transform.position;
         float x = (offset % (2 * textWidth));
         float newX = x - minX;
-        tickerText.transform.position = new Vector3(newX, lastPosition.y, lastPosition.z);
+        tickerText.transform.position = new Vector3(-1 * newX, lastPosition.y, lastPosition.z);
 
         Vector3 lastPosition1 = tickerText1.transform.position;
         float x1 = ((offset + textWidth) % (2 * textWidth));
         float newX1 = x1 - minX;
-        tickerText1.transform.position = new Vector3(newX1, lastPosition.y, lastPosition.z);
+        tickerText1.transform.position = new Vector3(-1 * newX1, lastPosition.y, lastPosition.z);
     }
 
     public void UpdateTextContent(string s){
