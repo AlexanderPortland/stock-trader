@@ -11,11 +11,13 @@ public class StockDataManager : MonoBehaviour
     public List<Stock> stocks;
     public int currentDay = 500;
     public UIManager uIManager;
+    public AssetHolder assetHolder;
 
     public void Start(){
         symbols = InitializeSymbols(Directory.GetCurrentDirectory() + "/assets/scripts/data/");
         stocks = InitializeStocks(symbols);
         uIManager = GetComponent<UIManager>();
+        assetHolder = GetComponent<AssetHolder>();
         InitializeUI();
     }
 
@@ -70,10 +72,38 @@ public class StockDataManager : MonoBehaviour
     }
 
     public void Buy(string symbol, float quantity){
+        float price = FindStock(symbol).TryGetCloseOnDay(currentDay);
+        float totalPrice = price * quantity;
+        Debug.Log(symbol + ", " + quantity + ", " + price);
+        if (totalPrice < 0) {
+            Debug.Log("buy cancelled: no price found");
+            return;
+        } else if (AssetHolder.cash < totalPrice){
+            Debug.Log("buy cancelled: not enough money to cover the transaction");
+            return;
+        }
+        AssetHolder.cash -= totalPrice;
+        Holding h = new Holding(symbol, quantity, price);
+        assetHolder.AddHolding(h);
+
         uIManager.UpdateAssetsUI();
     }
 
     public void Sell(string symbol, float quantity){
+        if (assetHolder.QuantityOfSymbol(symbol) < quantity){
+            Debug.Log("sell cancelled: not enough stock to cover the transaction");
+            return;
+        }
+        float price = FindStock(symbol).TryGetCloseOnDay(currentDay);
+        float totalPrice = price * quantity;
+        Debug.Log(symbol + ", " + quantity + ", " + price);
+        if (totalPrice < 0) {
+            Debug.Log("sell cancelled: no price found");
+            return;
+        }
+        AssetHolder.cash += totalPrice;
+        assetHolder.RemoveHoldingsOfSymbol(symbol, quantity);
+
         uIManager.UpdateAssetsUI();
     }
 

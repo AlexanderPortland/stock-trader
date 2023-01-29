@@ -16,6 +16,8 @@ public class UIManager : MonoBehaviour
     public TMP_InputField quantityField;
     public TextMeshProUGUI descriptionText;
     public TextMeshProUGUI cashText;
+    public GameObject holdingsTextPrefab;
+    public TextMeshProUGUI[] holdingsTexts;
 
     // Start is called before the first frame update
     void Start() {
@@ -78,6 +80,7 @@ public class UIManager : MonoBehaviour
 
     public void UpdateAssetsUI(){
         cashText.text = "Cash: " + assetHolder.GetCashString();
+
     }
 
     public void RequestBuy(){
