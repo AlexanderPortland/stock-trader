@@ -127,7 +127,7 @@ public class StockDataManager : MonoBehaviour
     }
 
     public void NextDay(){
-        UpdateDay(currentDay - 1);
+        UpdateDay(currentDay - 10);
     }
 
     public void UpdateDay(int newDay){

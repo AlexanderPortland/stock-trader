@@ -17,6 +17,12 @@ public class UIManager : MonoBehaviour
     public TextMeshProUGUI descriptionText;
     public TextMeshProUGUI cashText;
     public List<GameObject> holdingsText;
+    public UIGridRenderer gridRenderer;
+    public UILineRenderer lineRenderer;
+
+    //1 is full and 2 will only render half of vertices
+    public int GRAPH_RESOLUTION = 1;
+    public int GRAPH_BUFFER = 10;
 
     //holdings colors
     Color GREEN = new Color(0.344f, 1f, 0.491f);
@@ -29,6 +35,8 @@ public class UIManager : MonoBehaviour
         stockDataManager = FindObjectOfType<StockDataManager>();
         tickerManager = FindObjectOfType<TickerManager>();
         assetHolder = FindObjectOfType<AssetHolder>();
+        gridRenderer = FindObjectOfType<UIGridRenderer>();
+        lineRenderer = FindObjectOfType<UILineRenderer>();
         holdingsText.Add(GameObject.Find("HoldingsText"));
 
         tickerManager.UpdateTextContent(stockDataManager.GetStockSummary());
@@ -47,6 +55,7 @@ public class UIManager : MonoBehaviour
         dateText.text = d.DateToString();
         tickerManager.Start();
         tickerManager.UpdateTextContent(stockDataManager.GetStockSummary());
+        OnStockChange();
     }
 
     public void InitializeUI(){
@@ -85,6 +94,31 @@ public class UIManager : MonoBehaviour
         }
 
         descriptionText.text = text;
+    }
+
+    public void OnStockChange(){
+        lineRenderer.ClearPoints();
+        List<Vector2> points = new List<Vector2>();
+
+        string symbol = stockDropdown.options[stockDropdown.value].text;
+        float max = 0;
+        float min = 1000000000f;
+        Stock s = stockDataManager.FindStock(symbol);
+        int today = stockDataManager.currentDay;
+        for(int i = today; i < s.days.Length; i+=GRAPH_RESOLUTION){
+            Debug.Log("adding day" + i);
+            float close = s.days[i].close;
+            if (close > max) max = close;
+            if (close < min) min = close;
+            points.Add(new Vector2(i - today, close));
+        }
+        lineRenderer.SetPoints(points);
+        float unitHeight = lineRenderer.height / (max - min);
+        lineRenderer.maxY = max + (GRAPH_BUFFER / unitHeight);
+        lineRenderer.minY = Math.Max(min - (GRAPH_BUFFER / unitHeight), 0);
+        lineRenderer.maxX = s.days.Length - today;
+
+        UpdateDescriptionText();
     }
 
     public void UpdateAssetsUI(){

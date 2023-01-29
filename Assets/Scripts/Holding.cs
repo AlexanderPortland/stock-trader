@@ -21,7 +21,7 @@ public class Holding : MonoBehaviour
     }
 
     public string FancifyMoneyText(float amount){
-        return "$" + amount.ToString("#,##0");
+        return "$" + amount.ToString("#,##0:n");
     }
 
     public float GetCurrentPrice(){
