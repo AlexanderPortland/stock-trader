@@ -9,7 +9,7 @@ public class AssetHolder : MonoBehaviour
     public static float cash = 10000;
 
     public string FancifyMoneyText(float amount){
-        string[] a = amount.ToString().Split(".");
+        //string[] a = amount.ToString().Split(".");
         return "$" + amount.ToString("#,##0");
     }
 
@@ -31,22 +31,25 @@ public class AssetHolder : MonoBehaviour
 
     public void RemoveHoldingsOfSymbol(string symbol, float count){
         float numToRemove = count;
-        for(int i = 0; i < holdings.Count; i++){
+        for(int i = holdings.Count - 1; i >= 0; i--){
             if (numToRemove <= 0) return;
             Holding h = holdings[i];
             if (h.symbol == symbol){
                 if (numToRemove > h.buyQuantity){
+                    Debug.Log("a" + i);
                     numToRemove -= h.buyQuantity;
-                    holdings.Remove(h);
+                    holdings.RemoveAt(i);
+                    RemoveHoldingsOfSymbol(symbol, numToRemove);
+                    return;
                 } else if (numToRemove < h.buyQuantity){
+                    Debug.Log("b" + i);
                     h.buyQuantity -= numToRemove;
-                    numToRemove = 0;
+                    return;
                 } else {
-                    holdings.Remove(h);
-                    numToRemove = 0;
+                    Debug.Log("c" + i);
+                    holdings.RemoveAt(i);
+                    return;
                 }
-                RemoveHoldingsOfSymbol(symbol, numToRemove);
-                return;
             }
         }
     }

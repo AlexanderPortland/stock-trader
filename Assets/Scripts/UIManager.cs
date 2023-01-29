@@ -16,14 +16,14 @@ public class UIManager : MonoBehaviour
     public TMP_InputField quantityField;
     public TextMeshProUGUI descriptionText;
     public TextMeshProUGUI cashText;
-    public GameObject holdingsTextPrefab;
-    public TextMeshProUGUI[] holdingsTexts;
+    public List<GameObject> holdingsText;
 
     // Start is called before the first frame update
     void Start() {
         stockDataManager = GetComponent<StockDataManager>();
         tickerManager = FindObjectOfType<TickerManager>();
         assetHolder = FindObjectOfType<AssetHolder>();
+        holdingsText.Add(GameObject.Find("HoldingsText"));
 
         tickerManager.UpdateTextContent(stockDataManager.GetStockSummary());
         dateText = GameObject.Find("DateText").GetComponent<TextMeshProUGUI>();
@@ -81,9 +81,56 @@ public class UIManager : MonoBehaviour
     public void UpdateAssetsUI(){
         cashText.text = "Cash: " + assetHolder.GetCashString();
 
+        FixSizeOfHoldingsText();
+        UpdateHoldingsText();
+    }
+
+    void FixSizeOfHoldingsText(){
+        int i = assetHolder.holdings.Count;
+        if (i > holdingsText.Count){
+            for(int j = holdingsText.Count; j < i; j++){
+                Debug.Log("adding holding");
+                GameObject lead = holdingsText[0];
+                Vector3 position = 
+                    new Vector3(lead.transform.position.x, 
+                                lead.transform.position.y - (40f * j * lead.transform.lossyScale.x),
+                                lead.transform.position.z);
+                holdingsText.Add(Instantiate(lead, position, lead.transform.rotation, lead.transform.parent));
+            }
+        } else if (i == holdingsText.Count){
+
+        } else if (i < holdingsText.Count){
+            Debug.Log("removing holding");
+            for(int j = Math.Max(i, 1); j < holdingsText.Count; j++){ 
+                GameObject h = holdingsText[holdingsText.Count - 1];
+                holdingsText.RemoveAt(holdingsText.Count - 1);
+                GameObject.Destroy(h);
+            }
+        }
+        if (holdingsText.Count < 1) Debug.LogError("holdingsText less than 1");
+    }
+
+    void UpdateHoldingsText(){
+        assetHolder.holdings = SortHoldings(assetHolder.holdings);
+        List<Holding> loh = assetHolder.holdings;
+        for (int i = 0; i < holdingsText.Count; i++){
+            if (i < assetHolder.holdings.Count){
+                holdingsText[i].GetComponent<TextMeshProUGUI>().text 
+                    = stockDataManager.HoldingString(loh[i]);
+                //set color too
+            } else {
+                holdingsText[i].GetComponent<TextMeshProUGUI>().text 
+                    = "i'm a hidden holdings text";
+            }
+        }
+    }
+
+    List<Holding> SortHoldings(List<Holding> loh){
+        return loh;
     }
 
     public void RequestBuy(){
+        if (quantityField.text == "") return;
         int quantity = Int32.Parse(quantityField.text);
         string symbol = stockDropdown.options[stockDropdown.value].text;
         float price = stockDataManager.FindStock(symbol).TryGetCloseOnDay(stockDataManager.currentDay);
@@ -91,6 +138,7 @@ public class UIManager : MonoBehaviour
     }
 
     public void RequestSell(){
+        if (quantityField.text == "") return;
         int quantity = Int32.Parse(quantityField.text);
         string symbol = stockDropdown.options[stockDropdown.value].text;
         float price = stockDataManager.FindStock(symbol).TryGetCloseOnDay(stockDataManager.currentDay);

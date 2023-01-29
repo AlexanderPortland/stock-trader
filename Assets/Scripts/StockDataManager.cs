@@ -122,4 +122,14 @@ public class StockDataManager : MonoBehaviour
         currentDay = newDay;
         uIManager.UpdateDayUI(newDay);
     }
+
+    public string HoldingString(Holding h){
+        float price = FindStock(h.symbol).TryGetCloseOnDay(currentDay);
+        return h.symbol + " x" + h.buyQuantity + " at " 
+                + FancifyMoneyText(h.buyPrice) + " | " + FancifyMoneyText(price);
+    }
+
+    public string FancifyMoneyText(float amount){
+        return "$" + amount.ToString("#,##0");
+    }
 }

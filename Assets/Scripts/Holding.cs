@@ -13,4 +13,15 @@ public class Holding : MonoBehaviour
         buyPrice = _price;
         buyQuantity = _quantity;
     }
+
+    public override string ToString() {
+        StockDataManager stockDataManager = GetComponent<StockDataManager>();
+        float price = stockDataManager.FindStock(symbol).TryGetCloseOnDay(stockDataManager.currentDay);
+        return symbol + " x" + buyQuantity + " at " 
+                + FancifyMoneyText(buyPrice) + " | " + FancifyMoneyText(price);
+    }
+
+    public string FancifyMoneyText(float amount){
+        return "$" + amount.ToString("#,##0");
+    }
 }
