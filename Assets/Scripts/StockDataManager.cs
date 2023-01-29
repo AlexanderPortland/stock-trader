@@ -13,6 +13,11 @@ public class StockDataManager : MonoBehaviour
     public UIManager uIManager;
     public AssetHolder assetHolder;
 
+    float NEUTRAL_FLOW_THRESHOLD = 0.2f;
+    string POSITIVE_FLOW_ICON = "▲";
+    string NEUTRAL_FLOW_ICON = " •"; // or ~
+    string NEGATIVE_FLOW_ICON = "▼";
+
     public void Start(){
         symbols = InitializeSymbols(Directory.GetCurrentDirectory() + "/assets/scripts/data/");
         stocks = InitializeStocks(symbols);
@@ -58,11 +63,15 @@ public class StockDataManager : MonoBehaviour
             Stock stock = stocks[i];
             float close = stock.TryGetCloseOnDay(currentDay);
             if (close > 0){
-                string mySummary = new string(' ', NUM_OF_SPACES) + stock.symbol + " | $" + string.Format("{0:0.00}", close);
+                string flow = POSITIVE_FLOW_ICON;
+                float dayChange = close - stock.days[currentDay].open;
+                if (Mathf.Abs(dayChange) < NEUTRAL_FLOW_THRESHOLD) flow = NEUTRAL_FLOW_ICON; //or ~
+                else if (dayChange < 0) flow = NEGATIVE_FLOW_ICON;
+                string mySummary = new string(' ', NUM_OF_SPACES) + stock.symbol + " | $" + string.Format("{0:0.00}", close) + flow;
                 totalSummary += mySummary;
             }
         }
-        return "." + totalSummary;
+        return new string(' ', NUM_OF_SPACES) + "***" + totalSummary;
     }
 
     public Stock FindStock(string symbol){
@@ -88,6 +97,7 @@ public class StockDataManager : MonoBehaviour
         assetHolder.AddHolding(h);
 
         uIManager.UpdateAssetsUI();
+        uIManager.quantityField.text = "";
     }
 
     public void Sell(string symbol, float quantity){
@@ -106,6 +116,7 @@ public class StockDataManager : MonoBehaviour
         assetHolder.RemoveHoldingsOfSymbol(symbol, quantity);
 
         uIManager.UpdateAssetsUI();
+        uIManager.quantityField.text = "";
     }
 
     public bool ValidFileName(string fileName){
@@ -116,7 +127,7 @@ public class StockDataManager : MonoBehaviour
     }
 
     public void NextDay(){
-        UpdateDay(currentDay - 10);
+        UpdateDay(currentDay - 1);
     }
 
     public void UpdateDay(int newDay){
