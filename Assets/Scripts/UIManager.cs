@@ -20,7 +20,7 @@ public class UIManager : MonoBehaviour
 
     // Start is called before the first frame update
     public void Initialize() {
-        stockDataManager = GetComponent<StockDataManager>();
+        stockDataManager = FindObjectOfType<StockDataManager>();
         tickerManager = FindObjectOfType<TickerManager>();
         assetHolder = FindObjectOfType<AssetHolder>();
         holdingsText.Add(GameObject.Find("HoldingsText"));
@@ -89,6 +89,7 @@ public class UIManager : MonoBehaviour
 
     void FixSizeOfHoldingsText(){
         int i = assetHolder.holdings.Count;
+        Debug.Log("have " + holdingsText.Count + "want " + i);
         if (i > holdingsText.Count){
             for(int j = holdingsText.Count; j < i; j++){
                 Debug.Log("adding holding");
@@ -120,10 +121,31 @@ public class UIManager : MonoBehaviour
                 holdingsText[i].GetComponent<TextMeshProUGUI>().text 
                     = stockDataManager.HoldingString(loh[i]);
                 //set color too
+                holdingsText[i].GetComponent<TextMeshProUGUI>().color = GetColor2(loh[i].GetCurrentPrice() - loh[i].buyPrice);
             } else {
                 holdingsText[i].GetComponent<TextMeshProUGUI>().text 
                     = "";
             }
+        }
+    }
+
+    Color GetColor(float percent){
+        float H = percent * 0.4f;
+        float S = 0.9f;
+        float V = 0.9f;
+        return Color.HSVToRGB(H, S, V);
+    }
+
+    Color GetColor2(float difference){
+        Color GREEN = new Color(0.344f, 1f, 0.491f);
+        Color RED = new Color(1f, 0.345f, 0.443f);
+        Color BLUE = new Color(0.345f, 0.911f, 1f);
+        if (Math.Abs(difference) < 3f){
+            return BLUE;
+        } else if (difference > 0) {
+            return GREEN;
+        } else {
+            return RED;
         }
     }
 

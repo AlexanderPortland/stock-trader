@@ -16,8 +16,8 @@ public class StockDataManager : MonoBehaviour
     public void Start(){
         symbols = InitializeSymbols(Directory.GetCurrentDirectory() + "/assets/scripts/data/");
         stocks = InitializeStocks(symbols);
-        uIManager = GetComponent<UIManager>();
-        assetHolder = GetComponent<AssetHolder>();
+        uIManager = FindObjectOfType<UIManager>();
+        assetHolder = FindObjectOfType<AssetHolder>();
         InitializeUI();
     }
 
