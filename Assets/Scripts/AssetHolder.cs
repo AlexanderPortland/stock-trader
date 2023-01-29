@@ -19,6 +19,7 @@ public class AssetHolder : MonoBehaviour
 
     public void AddHolding(Holding newHolding){
         holdings.Add(newHolding);
+        TryCombineHoldings();
     }
 
     public float QuantityOfSymbol(string symbol){
@@ -49,6 +50,22 @@ public class AssetHolder : MonoBehaviour
                     Debug.Log("c" + i);
                     holdings.RemoveAt(i);
                     return;
+                }
+            }
+        }
+    }
+
+    public void TryCombineHoldings(){
+        for(int i = 0; i < holdings.Count; i ++){
+            for(int j = 0; j < holdings.Count; j ++){
+                if (i != j){
+                    Holding a = holdings[i];
+                    Holding b = holdings[j];
+                    if (a.symbol == b.symbol && a.buyPrice == b.buyPrice){
+                        a.buyQuantity += b.buyQuantity;
+                        holdings.RemoveAt(j);
+                        TryCombineHoldings();
+                    }
                 }
             }
         }
