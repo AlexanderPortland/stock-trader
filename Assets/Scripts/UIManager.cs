@@ -18,6 +18,12 @@ public class UIManager : MonoBehaviour
     public TextMeshProUGUI cashText;
     public List<GameObject> holdingsText;
 
+    //holdings colors
+    Color GREEN = new Color(0.344f, 1f, 0.491f);
+    Color RED = new Color(1f, 0.345f, 0.443f);
+    Color BLUE = new Color(0.345f, 0.911f, 1f);
+    Color WHITE = new Color(1f, 1f, 1f);
+
     // Start is called before the first frame update
     public void Initialize() {
         stockDataManager = FindObjectOfType<StockDataManager>();
@@ -61,22 +67,23 @@ public class UIManager : MonoBehaviour
     }
 
     public void UpdateDescriptionText(){
-        Color ERROR_COLOR = new Color(1f, 0.345f, 0.443f);
-        if (quantityField.text == "") {
-            descriptionText.text = "";
-            return;
-        }
-        int quantity = Int32.Parse(quantityField.text);
-        string symbol = stockDropdown.options[stockDropdown.value].text;
+        Color ERROR_COLOR = RED;
 
+        string symbol = stockDropdown.options[stockDropdown.value].text;
         float price = stockDataManager.FindStock(symbol).TryGetCloseOnDay(stockDataManager.currentDay);
-        float total = quantity * price;
-        string text = quantity + " shares of " + symbol + " at $" + price + " each = $" + total + " total";
-        descriptionText.color = new Color(1f, 1f, 1f);
+        string text = "";
+        if (quantityField.text != "") {
+            int quantity = Int32.Parse(quantityField.text);
+            float total = quantity * price;
+            text = quantity + " shares of " + symbol + " at $" + price + " each = $" + total + " total";
+            descriptionText.color = WHITE;
+        }
+
         if (price <= 0) {
             text = "sorry, there is no price data for " + symbol + " on " + stockDataManager.stocks[0].days[stockDataManager.currentDay].DateToString();
             descriptionText.color = ERROR_COLOR;
         }
+
         descriptionText.text = text;
     }
 
@@ -136,9 +143,6 @@ public class UIManager : MonoBehaviour
     }
 
     Color GetColor2(float difference){
-        Color GREEN = new Color(0.344f, 1f, 0.491f);
-        Color RED = new Color(1f, 0.345f, 0.443f);
-        Color BLUE = new Color(0.345f, 0.911f, 1f);
         if (Math.Abs(difference) < 3f){
             return BLUE;
         } else if (difference > 0) {
