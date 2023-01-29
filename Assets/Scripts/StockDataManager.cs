@@ -46,6 +46,7 @@ public class StockDataManager : MonoBehaviour
     }
 
     public void InitializeUI(){
+        //uIManager.Start();
         uIManager.InitializeUI();
         UpdateDay(2000);
     }

@@ -13,7 +13,7 @@ public class TickerManager : MonoBehaviour
     private float offset;
     public float textWidth;
 
-    public void Awake(){
+    public void Start(){
         tickerText = GameObject.Find("TickerText");
         tickerText1 = GameObject.Find("TickerText1");
         if (tickerText == null) Debug.LogError("no text with name \"TickerText\" found");

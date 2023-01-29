@@ -19,7 +19,7 @@ public class UIManager : MonoBehaviour
     public List<GameObject> holdingsText;
 
     // Start is called before the first frame update
-    void Start() {
+    public void Initialize() {
         stockDataManager = GetComponent<StockDataManager>();
         tickerManager = FindObjectOfType<TickerManager>();
         assetHolder = FindObjectOfType<AssetHolder>();
@@ -39,10 +39,12 @@ public class UIManager : MonoBehaviour
         Day d = s.days[newDay];
         Date date = d.date;
         dateText.text = d.DateToString();
+        tickerManager.Start();
         tickerManager.UpdateTextContent(stockDataManager.GetStockSummary());
     }
 
     public void InitializeUI(){
+        Initialize();
         List<TMP_Dropdown.OptionData> options = new List<TMP_Dropdown.OptionData>();
         for(int i = 0; i < stockDataManager.stocks.Count; i++){
             Stock s = stockDataManager.stocks[i];
@@ -120,7 +122,7 @@ public class UIManager : MonoBehaviour
                 //set color too
             } else {
                 holdingsText[i].GetComponent<TextMeshProUGUI>().text 
-                    = "i'm a hidden holdings text";
+                    = "";
             }
         }
     }
