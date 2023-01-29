@@ -105,7 +105,7 @@ public class UIManager : MonoBehaviour
         float min = 1000000000f;
         Stock s = stockDataManager.FindStock(symbol);
         int today = stockDataManager.currentDay;
-        for(int i = today; i < s.days.Length; i+=GRAPH_RESOLUTION){
+        for(int i = today; i < s.days.Length - 1; i+=GRAPH_RESOLUTION){
             Debug.Log("adding day" + i);
             float close = s.days[i].close;
             if (close > max) max = close;
