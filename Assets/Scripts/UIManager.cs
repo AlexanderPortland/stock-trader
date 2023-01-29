@@ -89,7 +89,6 @@ public class UIManager : MonoBehaviour
 
     void FixSizeOfHoldingsText(){
         int i = assetHolder.holdings.Count;
-        Debug.Log("have " + holdingsText.Count + "want " + i);
         if (i > holdingsText.Count){
             for(int j = holdingsText.Count; j < i; j++){
                 Debug.Log("adding holding");
