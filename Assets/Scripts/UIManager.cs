@@ -62,6 +62,18 @@ public class UIManager : MonoBehaviour
         pies.Add(GameObject.Find("PieChart"));
     }
 
+    void Update(){
+        if (Input.GetKeyDown(KeyCode.Tab) || Input.GetKeyDown(KeyCode.RightArrow)){
+            if(stockDropdown.value + 1 >= stockDropdown.options.Count) stockDropdown.value = 0;
+            else stockDropdown.value++;
+        } else if (Input.GetKeyDown(KeyCode.LeftArrow)){
+            if(stockDropdown.value - 1 < 0) stockDropdown.value = stockDropdown.options.Count - 1;
+            else stockDropdown.value--;
+        } else if (Input.GetKey(KeyCode.Space)){
+            stockDataManager.NextDay();
+        }
+    }
+
     public void UpdateDayUI(int newDay){
         Stock s = stockDataManager.stocks[0];
         //Debug.Log(s.name);
@@ -109,7 +121,11 @@ public class UIManager : MonoBehaviour
         }
 
         descriptionText.text = text;
-        priceText.text = "$" + string.Format("{0:0.00}", price);
+        if (price > 0) {
+            priceText.text = "$" + string.Format("{0:0.00}", price);
+        } else {
+            priceText.text = "N/A";
+        }
     }
 
     public void OnStockChange(){
