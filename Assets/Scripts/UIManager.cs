@@ -30,7 +30,7 @@ public class UIManager : MonoBehaviour
     //1 is full and 2 will only render half of vertices
     public int GRAPH_RESOLUTION = 1;
     public int GRAPH_BUFFER = 10;
-    public int GRAPH_DAYS_BACK = 100; //260 for year, 130 for 6 months, 20 for month, 5 for week
+    public int GRAPH_DAYS_BACK = 260; //260 for year, 130 for 6 months, 20 for month, 5 for week
 
     //holdings colors
     Color GREEN = new Color(0.344f, 1f, 0.491f);

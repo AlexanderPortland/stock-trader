@@ -1160,7 +1160,7 @@ MonoBehaviour:
   - {fileID: 293577667}
   GRAPH_RESOLUTION: 1
   GRAPH_BUFFER: 50
-  GRAPH_DAYS_BACK: 100
+  GRAPH_DAYS_BACK: 260
   unusedPieColors:
   - {r: 1, g: 0.21960784, b: 0.21960784, a: 1}
   - {r: 1, g: 0.5568628, b: 0.21960784, a: 1}
