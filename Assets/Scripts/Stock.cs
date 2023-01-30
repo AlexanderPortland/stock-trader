@@ -12,6 +12,7 @@ public class Stock : MonoBehaviour
     public Stock(string symbol){
         this.symbol = symbol;
         string path = symbol + ".csv";
+        Debug.Log("looking at " + symbol);
         StreamReader reader = File.OpenText(Directory.GetCurrentDirectory() + "/assets/scripts/data/" + path);
         string[] lines = reader.ReadToEnd().Split('\n');
 
