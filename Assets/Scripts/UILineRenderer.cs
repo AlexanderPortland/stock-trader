@@ -57,6 +57,10 @@ public class UILineRenderer : Graphic
             int index = i * 4;
             vh.AddTriangle(index + 0, index + 1, index + 2);
             vh.AddTriangle(index + 1, index + 2, index + 3);
+            if (i < points.Count - 2){
+                vh.AddTriangle(index + 2, index + 3, index + 4);
+                vh.AddTriangle(index + 3, index + 4, index + 5);
+            }
         }
     }
 
@@ -66,8 +70,14 @@ public class UILineRenderer : Graphic
     }
 
     public float GetAngle(Vector2 me, Vector2 target) {
+        me = new Vector3(unitWidth * me.x, unitHeight * me.y);
+        target = new Vector3(unitWidth * target.x, unitHeight * target.y);
         //panel resolution go there in place of 9 and 16
-        return (float)(Mathf.Atan2(9f*(target.y - me.y), 16f*(target.x - me.x)) * (180 / Mathf.PI));
+        float yRes = height;
+        float xRes = width;
+
+        //return (float)(Mathf.Atan2(9f*(target.y - me.y), 16f*(target.x - me.x)) * (180 / Mathf.PI));
+        return (float)(Mathf.Atan2(yRes*(target.y - me.y), xRes*(target.x - me.x)) * (180 / Mathf.PI));
     }   
 
     void DrawVerticesForPoint(Vector2 point, Vector2 point2, float angle, VertexHelper vh) {
