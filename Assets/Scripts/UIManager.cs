@@ -31,6 +31,7 @@ public class UIManager : MonoBehaviour
     public int GRAPH_RESOLUTION = 1;
     public int GRAPH_BUFFER = 10;
     public int GRAPH_DAYS_BACK = 260; //260 for year, 130 for 6 months, 20 for month, 5 for week
+    public int GRAPH_SCALING_DAYS_BACK = 260;
 
     //holdings colors
     Color GREEN = new Color(0.344f, 1f, 0.491f);
@@ -137,19 +138,23 @@ public class UIManager : MonoBehaviour
         float min = 1000000000f;
         Stock s = stockDataManager.FindStock(symbol);
         int today = stockDataManager.currentDay;
-        int lastDay = Math.Min(s.days.Length - 1, today + GRAPH_DAYS_BACK);
-        for(int i = today; i < lastDay; i+=GRAPH_RESOLUTION){
-            Debug.Log("adding day" + i);
+        int lastDayRender = Math.Min(s.days.Length - 1, today + GRAPH_DAYS_BACK);
+        int lastDayCount = Math.Min(s.days.Length - 1, today + GRAPH_SCALING_DAYS_BACK);
+        for(int i = today; i < lastDayCount; i++){
+            Debug.Log("counting day" + i);
             float close = s.days[i].close;
             if (close > max) max = close;
             if (close < min) min = close;
-            points.Add(new Vector2(i - today, close));
+            if ((i - today) % GRAPH_RESOLUTION == 0 && i < lastDayRender){
+                Debug.Log("rendering day" + i);
+                points.Add(new Vector2(i - today, close));
+            }
         }
         lineRenderer.SetPoints(points);
         float unitHeight = lineRenderer.height / (max - min);
         lineRenderer.maxY = max + (GRAPH_BUFFER / unitHeight);
         lineRenderer.minY = Math.Max(min - (GRAPH_BUFFER / unitHeight), 0);
-        lineRenderer.maxX = lastDay - today - 1;
+        lineRenderer.maxX = lastDayRender - today - 1;
         lineRenderer.minX = 0;
         maxText.text = assetHolder.FancifyMoneyText(max);
         minText.text = assetHolder.FancifyMoneyText(min);
