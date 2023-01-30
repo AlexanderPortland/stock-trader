@@ -23,6 +23,7 @@ public class UIManager : MonoBehaviour
     public TextMeshProUGUI valueText;
     public TextMeshProUGUI maxText;
     public TextMeshProUGUI minText;
+    public TextMeshProUGUI priceText;
 
     public List<GameObject> pies;
 
@@ -55,6 +56,7 @@ public class UIManager : MonoBehaviour
         valueText = GameObject.Find("ValueText").GetComponent<TextMeshProUGUI>();
         maxText = GameObject.Find("MaxLabel").GetComponent<TextMeshProUGUI>();
         minText = GameObject.Find("MinLabel").GetComponent<TextMeshProUGUI>();
+        priceText = GameObject.Find("PriceLabel").GetComponent<TextMeshProUGUI>();
 
         pies = new List<GameObject>();
         pies.Add(GameObject.Find("PieChart"));
@@ -107,6 +109,7 @@ public class UIManager : MonoBehaviour
         }
 
         descriptionText.text = text;
+        priceText.text = "$" + string.Format("{0:0.00}", price);
     }
 
     public void OnStockChange(){
