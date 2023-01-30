@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using System;
 using System.Text.RegularExpressions;
@@ -19,6 +20,8 @@ public class UIManager : MonoBehaviour
     public List<GameObject> holdingsText;
     public UIGridRenderer gridRenderer;
     public UILineRenderer lineRenderer;
+
+    public List<GameObject> pies;
 
     //1 is full and 2 will only render half of vertices
     public int GRAPH_RESOLUTION = 1;
@@ -45,6 +48,9 @@ public class UIManager : MonoBehaviour
         quantityField = GameObject.Find("QuantityField").GetComponent<TMP_InputField>();
         descriptionText = GameObject.Find("DescriptionText").GetComponent<TextMeshProUGUI>();
         cashText = GameObject.Find("CashText").GetComponent<TextMeshProUGUI>();
+
+        pies = new List<GameObject>();
+        pies.Add(GameObject.Find("PieChart"));
     }
 
     public void UpdateDayUI(int newDay){
@@ -126,6 +132,9 @@ public class UIManager : MonoBehaviour
 
         FixSizeOfHoldingsText();
         UpdateHoldingsText();
+
+        FixSizeOfPies();
+        UpdatePies();
     }
 
     void FixSizeOfHoldingsText(){
@@ -204,5 +213,85 @@ public class UIManager : MonoBehaviour
         string symbol = stockDropdown.options[stockDropdown.value].text;
         float price = stockDataManager.FindStock(symbol).TryGetCloseOnDay(stockDataManager.currentDay);
         if (price > 0) stockDataManager.Sell(symbol, quantity);
+    }
+
+    public void FixSizeOfPies(){
+        int i = stockDataManager.stocks.Count;
+
+        if (i > pies.Count){
+            for(int j = pies.Count; j < i; j++){
+                Debug.Log("adding pie");
+                GameObject lead = pies[0];
+                Debug.Log(lead);
+                Vector3 position = lead.transform.position;
+                GameObject g = Instantiate(lead, position, lead.transform.rotation, lead.transform.parent);
+                pies.Add(g);
+            }
+        } else if (i == pies.Count){
+
+        } else if (i < pies.Count){
+            Debug.Log("removing pie");
+            for(int j = Math.Max(i, 1); j < pies.Count; j++){ 
+                GameObject h = pies[pies.Count - 1];
+                pies.RemoveAt(pies.Count - 1);
+                GameObject.Destroy(h);
+            }
+        }
+        if (pies.Count < 1) Debug.LogError("amount of pies less than 1 (one has to be saved to be copied)");
+    }
+
+    Color[] PIE_COLORS = new Color[] {
+        new Color(255f / 255f, 56f / 255f, 56f / 255f), //bright red
+        new Color(255f / 255f, 142f / 255f, 56f / 255f), //orange
+        new Color(255f / 255f, 255f / 255f, 56f / 255f), //bright yellow
+        new Color(255f / 255f, 116f / 255f, 56f / 255f), //red orange
+        new Color(255f / 255f, 215f / 255f, 56f / 255f), //yellow orange
+        new Color(146f / 255f, 255f / 255f, 56f / 255f), //lime
+        new Color(56f / 255f, 255f / 255f, 86f / 255f), //bright green
+        new Color(56f / 255f, 255f / 255f, 192f / 255f), //green blue
+        new Color(56f / 255f, 255f / 255f, 248f / 255f), //bright cyan
+        new Color(56f / 255f, 209f / 255f, 255f / 255f), //sky blue
+        new Color(56f / 255f, 139f / 255f, 255f / 255f), //medium blue
+        new Color(56f / 255f, 59f / 255f, 255f / 255f), //purpley blue
+        new Color(122f / 255f, 56f / 255f, 255f / 255f), //purple
+        new Color(192f / 255f, 56f / 255f, 255f / 255f), //pink purple
+        new Color(255f / 255f, 56f / 255f, 255f / 255f), //bright pink
+        new Color(255f / 255f, 56f / 255f, 179f / 255f) //pink red
+        };
+
+    void UpdatePies(){
+        float[] values = assetHolder.HoldingsValueBySymbol();
+        float totalValue = Sum(values);
+        float valOfPrevious = 0;
+        int usedColors = 0;
+        for(int i = values.Length - 1; i >= 0; i--){
+            if(totalValue > 0){
+                if(values[i] > 0){
+                    pies[i].SetActive(true);
+                    Image pie = pies[i].GetComponent<Image>();
+                    float myFill = values[i] / totalValue;
+                    Debug.Log(i + ", myfill: " + myFill + ", previous: " + valOfPrevious);
+                    pie.fillAmount = valOfPrevious + myFill;
+                    valOfPrevious += myFill;
+                    pie.color = PIE_COLORS[usedColors];
+                    usedColors++;
+                } else {
+                    pies[i].SetActive(false);
+                }
+            } else if (totalValue == 0){
+                pies[i].SetActive(false);
+            } else {
+                Debug.LogError("total value is less than zero");
+                return;
+            }
+        }
+    }
+
+    float Sum(float[] nums){
+        float sum = 0;
+        for(int i = 0; i < nums.Length; i++){
+            sum += nums[i];
+        }
+        return sum;
     }
 }

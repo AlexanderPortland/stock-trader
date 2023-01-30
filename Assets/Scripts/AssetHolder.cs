@@ -70,4 +70,19 @@ public class AssetHolder : MonoBehaviour
             }
         }
     }
+
+    public float[] HoldingsValueBySymbol(){
+        StockDataManager stockDataManager = FindObjectOfType<StockDataManager>();
+        float[] values = new float[stockDataManager.symbols.Length];
+
+        for(int i = 0; i < stockDataManager.symbols.Length; i++){
+            string symbol = stockDataManager.symbols[i];
+            float symbolVal = 0;
+            for(int j = 0; j < holdings.Count; j++){
+                if (holdings[j].symbol == symbol) symbolVal += holdings[j].GetCurrentValue();
+            }
+            values[i] = symbolVal;
+        }
+        return values;
+    }
 }

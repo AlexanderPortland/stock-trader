@@ -24,6 +24,10 @@ public class Holding : MonoBehaviour
         return "$" + amount.ToString("#,##0:n");
     }
 
+    public float GetCurrentValue(){
+        return buyQuantity * GetCurrentPrice();
+    }
+
     public float GetCurrentPrice(){
         StockDataManager stockDataManager = FindObjectOfType<StockDataManager>();
         return stockDataManager.FindStock(symbol).TryGetCloseOnDay(stockDataManager.currentDay);
