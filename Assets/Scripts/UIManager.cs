@@ -20,12 +20,16 @@ public class UIManager : MonoBehaviour
     public List<GameObject> holdingsText;
     public UIGridRenderer gridRenderer;
     public UILineRenderer lineRenderer;
+    public TextMeshProUGUI valueText;
+    public TextMeshProUGUI maxText;
+    public TextMeshProUGUI minText;
 
     public List<GameObject> pies;
 
     //1 is full and 2 will only render half of vertices
     public int GRAPH_RESOLUTION = 1;
     public int GRAPH_BUFFER = 10;
+    public int GRAPH_DAYS_BACK = 100; //260 for year, 130 for 6 months, 20 for month, 5 for week
 
     //holdings colors
     Color GREEN = new Color(0.344f, 1f, 0.491f);
@@ -48,6 +52,9 @@ public class UIManager : MonoBehaviour
         quantityField = GameObject.Find("QuantityField").GetComponent<TMP_InputField>();
         descriptionText = GameObject.Find("DescriptionText").GetComponent<TextMeshProUGUI>();
         cashText = GameObject.Find("CashText").GetComponent<TextMeshProUGUI>();
+        valueText = GameObject.Find("ValueText").GetComponent<TextMeshProUGUI>();
+        maxText = GameObject.Find("MaxLabel").GetComponent<TextMeshProUGUI>();
+        minText = GameObject.Find("MinLabel").GetComponent<TextMeshProUGUI>();
 
         pies = new List<GameObject>();
         pies.Add(GameObject.Find("PieChart"));
@@ -111,7 +118,8 @@ public class UIManager : MonoBehaviour
         float min = 1000000000f;
         Stock s = stockDataManager.FindStock(symbol);
         int today = stockDataManager.currentDay;
-        for(int i = today; i < s.days.Length - 1; i+=GRAPH_RESOLUTION){
+        int lastDay = Math.Min(s.days.Length - 1, today + GRAPH_DAYS_BACK);
+        for(int i = today; i < lastDay; i+=GRAPH_RESOLUTION){
             Debug.Log("adding day" + i);
             float close = s.days[i].close;
             if (close > max) max = close;
@@ -122,7 +130,10 @@ public class UIManager : MonoBehaviour
         float unitHeight = lineRenderer.height / (max - min);
         lineRenderer.maxY = max + (GRAPH_BUFFER / unitHeight);
         lineRenderer.minY = Math.Max(min - (GRAPH_BUFFER / unitHeight), 0);
-        lineRenderer.maxX = s.days.Length - today;
+        lineRenderer.maxX = lastDay - today - 1;
+        lineRenderer.minX = 0;
+        maxText.text = assetHolder.FancifyMoneyText(max);
+        minText.text = assetHolder.FancifyMoneyText(min);
 
         UpdateDescriptionText();
     }
@@ -216,7 +227,7 @@ public class UIManager : MonoBehaviour
     }
 
     public void FixSizeOfPies(){
-        int i = stockDataManager.stocks.Count;
+        int i = stockDataManager.stocks.Count + 1;
 
         if (i > pies.Count){
             for(int j = pies.Count; j < i; j++){
@@ -233,6 +244,7 @@ public class UIManager : MonoBehaviour
             Debug.Log("removing pie");
             for(int j = Math.Max(i, 1); j < pies.Count; j++){ 
                 GameObject h = pies[pies.Count - 1];
+                unusedPieColors.Add(h.GetComponent<Image>().color);
                 pies.RemoveAt(pies.Count - 1);
                 GameObject.Destroy(h);
             }
@@ -240,12 +252,12 @@ public class UIManager : MonoBehaviour
         if (pies.Count < 1) Debug.LogError("amount of pies less than 1 (one has to be saved to be copied)");
     }
 
-    Color[] PIE_COLORS = new Color[] {
+    public List<Color> unusedPieColors = new List<Color> {
         new Color(255f / 255f, 56f / 255f, 56f / 255f), //bright red
         new Color(255f / 255f, 142f / 255f, 56f / 255f), //orange
         new Color(255f / 255f, 255f / 255f, 56f / 255f), //bright yellow
-        new Color(255f / 255f, 116f / 255f, 56f / 255f), //red orange
-        new Color(255f / 255f, 215f / 255f, 56f / 255f), //yellow orange
+        //new Color(255f / 255f, 116f / 255f, 56f / 255f), //red orange
+        //new Color(255f / 255f, 215f / 255f, 56f / 255f), //yellow orange
         new Color(146f / 255f, 255f / 255f, 56f / 255f), //lime
         new Color(56f / 255f, 255f / 255f, 86f / 255f), //bright green
         new Color(56f / 255f, 255f / 255f, 192f / 255f), //green blue
@@ -261,22 +273,31 @@ public class UIManager : MonoBehaviour
 
     void UpdatePies(){
         float[] values = assetHolder.HoldingsValueBySymbol();
-        float totalValue = Sum(values);
+        float totalValue = Sum(values) + AssetHolder.cash;
         float valOfPrevious = 0;
-        int usedColors = 0;
-        for(int i = values.Length - 1; i >= 0; i--){
+        for(int i = values.Length; i >= 1; i--){
             if(totalValue > 0){
-                if(values[i] > 0){
-                    pies[i].SetActive(true);
+                if(values[i - 1] > 0){
                     Image pie = pies[i].GetComponent<Image>();
-                    float myFill = values[i] / totalValue;
-                    Debug.Log(i + ", myfill: " + myFill + ", previous: " + valOfPrevious);
+                    if (!pies[i].activeInHierarchy){
+                        pies[i].SetActive(true);
+                        int index = UnityEngine.Random.Range((int)0, (int)unusedPieColors.Count);
+                        pie.color = unusedPieColors[index];
+                        Debug.Log("setting color to " + unusedPieColors[index]);
+                        unusedPieColors.RemoveAt(index);
+                    }
+                    
+                    float myFill = values[i - 1] / totalValue;
+                    //Debug.Log(i + ", myfill: " + myFill + ", previous: " + valOfPrevious);
                     pie.fillAmount = valOfPrevious + myFill;
                     valOfPrevious += myFill;
-                    pie.color = PIE_COLORS[usedColors];
-                    usedColors++;
                 } else {
-                    pies[i].SetActive(false);
+                    if (pies[i].activeInHierarchy){
+                        pies[i].SetActive(false);
+                        Image pie = pies[i].GetComponent<Image>();
+                        if (pie.color != Color.white) unusedPieColors.Add(pie.color);
+                        pie.color = Color.white;
+                    }
                 }
             } else if (totalValue == 0){
                 pies[i].SetActive(false);
@@ -285,6 +306,7 @@ public class UIManager : MonoBehaviour
                 return;
             }
         }
+        valueText.text = assetHolder.FancifyMoneyText(totalValue) + " in assets";
     }
 
     float Sum(float[] nums){
