@@ -5,8 +5,51 @@ using UnityEngine;
 public class AssetHolder : MonoBehaviour
 {
     public List<Holding> holdings;
+    public StockDataManager stockDataManager;
     
-    public static float cash = 10000;
+    public float cash = 10000;
+
+    public void Awake(){
+        stockDataManager = FindObjectOfType<StockDataManager>();
+    }
+
+    public void Buy(string symbol, float quantity){
+        float price = stockDataManager.FindStock(symbol).TryGetCloseOnDay(stockDataManager.currentDay);
+        float totalPrice = price * quantity;
+        Debug.Log(symbol + ", " + quantity + ", " + price);
+        if (totalPrice < 0) {
+            Debug.Log("buy cancelled: no price found");
+            return;
+        } else if (cash < totalPrice){
+            Debug.Log("buy cancelled: not enough money to cover the transaction");
+            return;
+        }
+        cash -= totalPrice;
+        Holding h = new Holding(symbol, quantity, price);
+        AddHolding(h);
+
+        stockDataManager.uIManager.UpdateAssetsUI();
+        stockDataManager.uIManager.quantityField.text = "";
+    }
+
+    public void Sell(string symbol, float quantity){
+        if (QuantityOfSymbol(symbol) < quantity){
+            Debug.Log("sell cancelled: not enough stock to cover the transaction");
+            return;
+        }
+        float price = stockDataManager.FindStock(symbol).TryGetCloseOnDay(stockDataManager.currentDay);
+        float totalPrice = price * quantity;
+        Debug.Log(symbol + ", " + quantity + ", " + price);
+        if (totalPrice < 0) {
+            Debug.Log("sell cancelled: no price found");
+            return;
+        }
+        cash += totalPrice;
+        RemoveHoldingsOfSymbol(symbol, quantity);
+
+        stockDataManager.uIManager.UpdateAssetsUI();
+        stockDataManager.uIManager.quantityField.text = "";
+    }
 
     public string FancifyMoneyText(float amount){
         //string[] a = amount.ToString().Split(".");

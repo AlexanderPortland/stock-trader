@@ -178,14 +178,16 @@ public class UIManager : MonoBehaviour
         lineRenderer.SetPoints(points);
         LinearFunction fit = Calculator.FindLineOfBestFit(pointsToFit);
         lineBestFit.SetFunction(fit);
-        float StandardDeviationShiftDown = Calculator.StandardDeviationShiftDown(fit, pointsToFit);
-        topSD.SetFunction(new LinearFunction(fit.m, fit.b + StandardDeviationShiftDown));
-        bottomSD.SetFunction(new LinearFunction(fit.m, fit.b - StandardDeviationShiftDown));
+        float StandardDeviation = Calculator.StandardDeviation(fit, pointsToFit);
+        topSD.SetFunction(new LinearFunction(fit.m, fit.b + StandardDeviation));
+        bottomSD.SetFunction(new LinearFunction(fit.m, fit.b - StandardDeviation));
 
         float hue = Mathf.Lerp(POSITIVE_SLOPE_HUE, NEGATIVE_SLOPE_HUE, Sigmoid(fit.m * SIGMOID_SCALING_CONST));
         lineBestFit.color = Color.HSVToRGB(hue, 0.75f, 1f);
-        float sd = StandardDeviationShiftDown / Mathf.Sqrt(2);
-        SDText.text = "standard deviation: $" + string.Format("{0:0.00}", sd) + "\n ~= %" + string.Format("{0:0.00}", (100 * pointsToFit.Count * sd) / (Sum(pointsToFit)));
+        float x = Mathf.Atan(1 / fit.m);
+        float theta = ((float)Math.PI / 2) - x;
+        float shiftDown = StandardDeviation / (float)Math.Cos(theta);
+        SDText.text = "standard deviation: $" + string.Format("{0:0.00}", StandardDeviation) + "\n ~= %" + string.Format("{0:0.00}", (100 * pointsToFit.Count * StandardDeviation) / (Sum(pointsToFit)));
         
         maxText.text = assetHolder.FancifyMoneyText(max);
         minText.text = "$0";
@@ -272,7 +274,7 @@ public class UIManager : MonoBehaviour
         int quantity = Int32.Parse(quantityField.text);
         string symbol = stockDropdown.options[stockDropdown.value].text;
         float price = stockDataManager.FindStock(symbol).TryGetCloseOnDay(stockDataManager.currentDay);
-        if (price > 0) stockDataManager.Buy(symbol, quantity);
+        if (price > 0) assetHolder.Buy(symbol, quantity);
     }
 
     public void RequestSell(){
@@ -280,7 +282,7 @@ public class UIManager : MonoBehaviour
         int quantity = Int32.Parse(quantityField.text);
         string symbol = stockDropdown.options[stockDropdown.value].text;
         float price = stockDataManager.FindStock(symbol).TryGetCloseOnDay(stockDataManager.currentDay);
-        if (price > 0) stockDataManager.Sell(symbol, quantity);
+        if (price > 0) assetHolder.Sell(symbol, quantity);
     }
 
     public void FixSizeOfPies(){
@@ -327,7 +329,7 @@ public class UIManager : MonoBehaviour
 
     void UpdatePies(){
         float[] values = assetHolder.HoldingsValueBySymbol();
-        float totalValue = Sum(values) + AssetHolder.cash;
+        float totalValue = Sum(values) + assetHolder.cash;
         float valOfPrevious = 0;
         for(int i = values.Length; i >= 1; i--){
             if(totalValue > 0){

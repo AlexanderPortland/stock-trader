@@ -81,44 +81,6 @@ public class StockDataManager : MonoBehaviour
         return null;
     }
 
-    public void Buy(string symbol, float quantity){
-        float price = FindStock(symbol).TryGetCloseOnDay(currentDay);
-        float totalPrice = price * quantity;
-        Debug.Log(symbol + ", " + quantity + ", " + price);
-        if (totalPrice < 0) {
-            Debug.Log("buy cancelled: no price found");
-            return;
-        } else if (AssetHolder.cash < totalPrice){
-            Debug.Log("buy cancelled: not enough money to cover the transaction");
-            return;
-        }
-        AssetHolder.cash -= totalPrice;
-        Holding h = new Holding(symbol, quantity, price);
-        assetHolder.AddHolding(h);
-
-        uIManager.UpdateAssetsUI();
-        uIManager.quantityField.text = "";
-    }
-
-    public void Sell(string symbol, float quantity){
-        if (assetHolder.QuantityOfSymbol(symbol) < quantity){
-            Debug.Log("sell cancelled: not enough stock to cover the transaction");
-            return;
-        }
-        float price = FindStock(symbol).TryGetCloseOnDay(currentDay);
-        float totalPrice = price * quantity;
-        Debug.Log(symbol + ", " + quantity + ", " + price);
-        if (totalPrice < 0) {
-            Debug.Log("sell cancelled: no price found");
-            return;
-        }
-        AssetHolder.cash += totalPrice;
-        assetHolder.RemoveHoldingsOfSymbol(symbol, quantity);
-
-        uIManager.UpdateAssetsUI();
-        uIManager.quantityField.text = "";
-    }
-
     public bool ValidFileName(string fileName){
         if (!fileName.Contains(".csv")) return false;
         if (fileName.Contains(".meta")) return false;

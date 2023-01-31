@@ -29,12 +29,7 @@ public class Calculator : MonoBehaviour
         return f;
     }
 
-    public static float StandardDeviationShiftDown(LinearFunction func, List<Vector2> data){
-        float dev = StandardDeviation(func, data);
-        return Mathf.Sqrt(2) * dev;
-    }
-
-    static float StandardDeviation(LinearFunction func, List<Vector2> data){
+    public static float StandardDeviation(LinearFunction func, List<Vector2> data){
         float sumDistSquared = 0;
         for(int i = 0; i < data.Count; i++){
             float dist = DistanceFromLine(func, data[i]);

@@ -1167,6 +1167,7 @@ MonoBehaviour:
   GRAPH_BUFFER: 50
   GRAPH_DAYS_BACK: 260
   GRAPH_SCALING_DAYS_BACK: 520
+  GRAPH_ZOOM_IN: 1
   unusedPieColors:
   - {r: 1, g: 0.21960784, b: 0.21960784, a: 1}
   - {r: 1, g: 0.5568628, b: 0.21960784, a: 1}
@@ -1195,6 +1196,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   holdings: []
+  stockDataManager: {fileID: 0}
+  cash: 10000
 --- !u!114 &331972844
 MonoBehaviour:
   m_ObjectHideFlags: 0
