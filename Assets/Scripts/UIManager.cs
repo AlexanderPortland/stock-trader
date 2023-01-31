@@ -21,6 +21,9 @@ public class UIManager : MonoBehaviour
     public UIGridRenderer gridRenderer;
     public UILineRenderer lineRenderer;
     public UILineRenderer lineBestFit;
+    public UILineRenderer topSD;
+    public UILineRenderer bottomSD;
+    public TextMeshProUGUI SDText;
     public UILineRenderer[] allLines;
 
     public TextMeshProUGUI valueText;
@@ -35,6 +38,7 @@ public class UIManager : MonoBehaviour
     public int GRAPH_BUFFER = 10;
     public int GRAPH_DAYS_BACK = 260; //260 for year, 130 for 6 months, 20 for month, 5 for week
     public int GRAPH_SCALING_DAYS_BACK = 260;
+    public bool GRAPH_ZOOM_IN = false;
 
     float NEGATIVE_SLOPE_HUE = 0f;
     float POSITIVE_SLOPE_HUE = 126f / 360f;
@@ -54,6 +58,8 @@ public class UIManager : MonoBehaviour
         gridRenderer = FindObjectOfType<UIGridRenderer>();
         lineRenderer = GameObject.Find("MAIN").GetComponent<UILineRenderer>();
         lineBestFit = GameObject.Find("BestFit").GetComponent<UILineRenderer>();
+        topSD = GameObject.Find("TopSD").GetComponent<UILineRenderer>();
+        bottomSD = GameObject.Find("BottomSD").GetComponent<UILineRenderer>();
         allLines = FindObjectsOfType<UILineRenderer>();
         holdingsText.Add(GameObject.Find("HoldingsText"));
 
@@ -62,6 +68,7 @@ public class UIManager : MonoBehaviour
         stockDropdown = GameObject.Find("StockChoices").GetComponent<TMP_Dropdown>();
         quantityField = GameObject.Find("QuantityField").GetComponent<TMP_InputField>();
         descriptionText = GameObject.Find("DescriptionText").GetComponent<TextMeshProUGUI>();
+        SDText = GameObject.Find("SDText").GetComponent<TextMeshProUGUI>();
         cashText = GameObject.Find("CashText").GetComponent<TextMeshProUGUI>();
         valueText = GameObject.Find("ValueText").GetComponent<TextMeshProUGUI>();
         maxText = GameObject.Find("MaxLabel").GetComponent<TextMeshProUGUI>();
@@ -163,7 +170,8 @@ public class UIManager : MonoBehaviour
         foreach(UILineRenderer rend in allLines){
             float unitHeight = rend.height / (max - min);
             rend.maxY = max + (GRAPH_BUFFER / unitHeight);
-            rend.minY = Math.Max(min - (GRAPH_BUFFER / unitHeight), 0);
+            rend.minY = 0;
+            if (GRAPH_ZOOM_IN) rend.minY = Math.Max(min - (GRAPH_BUFFER / unitHeight), 0);
             rend.maxX = lastDayRender - today - 1;
             rend.minX = 0;
         }
@@ -171,14 +179,17 @@ public class UIManager : MonoBehaviour
         LinearFunction fit = Calculator.FindLineOfBestFit(pointsToFit);
         lineBestFit.SetFunction(fit);
         float StandardDeviationShiftDown = Calculator.StandardDeviationShiftDown(fit, pointsToFit);
-        GameObject.Find("TopSD").GetComponent<UILineRenderer>().SetFunction(new LinearFunction(fit.m, fit.b + StandardDeviationShiftDown));
-        GameObject.Find("BottomSD").GetComponent<UILineRenderer>().SetFunction(new LinearFunction(fit.m, fit.b - StandardDeviationShiftDown));
+        topSD.SetFunction(new LinearFunction(fit.m, fit.b + StandardDeviationShiftDown));
+        bottomSD.SetFunction(new LinearFunction(fit.m, fit.b - StandardDeviationShiftDown));
 
         float hue = Mathf.Lerp(POSITIVE_SLOPE_HUE, NEGATIVE_SLOPE_HUE, Sigmoid(fit.m * SIGMOID_SCALING_CONST));
         lineBestFit.color = Color.HSVToRGB(hue, 0.75f, 1f);
+        float sd = StandardDeviationShiftDown / Mathf.Sqrt(2);
+        SDText.text = "standard deviation: $" + string.Format("{0:0.00}", sd) + "\n ~= %" + string.Format("{0:0.00}", (100 * pointsToFit.Count * sd) / (Sum(pointsToFit)));
         
         maxText.text = assetHolder.FancifyMoneyText(max);
-        minText.text = assetHolder.FancifyMoneyText(min);
+        minText.text = "$0";
+        if (GRAPH_ZOOM_IN) minText.text = assetHolder.FancifyMoneyText(min);
 
         UpdateDescriptionText();
     }
@@ -354,6 +365,14 @@ public class UIManager : MonoBehaviour
         float sum = 0;
         for(int i = 0; i < nums.Length; i++){
             sum += nums[i];
+        }
+        return sum;
+    }
+
+    float Sum(List<Vector2> nums){
+        float sum = 0;
+        for(int i = 0; i < nums.Count; i++){
+            sum += nums[i].y;
         }
         return sum;
     }
