@@ -28,6 +28,31 @@ public class Calculator : MonoBehaviour
         Debug.Log(f);
         return f;
     }
+
+    public static float StandardDeviationShiftDown(LinearFunction func, List<Vector2> data){
+        float dev = StandardDeviation(func, data);
+        return Mathf.Sqrt(2) * dev;
+    }
+
+    static float StandardDeviation(LinearFunction func, List<Vector2> data){
+        float sumDistSquared = 0;
+        for(int i = 0; i < data.Count; i++){
+            float dist = DistanceFromLine(func, data[i]);
+            sumDistSquared += Mathf.Pow(dist, 2);
+        }
+        return Mathf.Sqrt(sumDistSquared / data.Count);
+    }
+
+    static float DistanceFromLine(LinearFunction func, Vector2 p0){
+        float x1 = 0; //dont change
+        float x2 = 1;
+
+        Vector2 p1 = new Vector2(x1, func.f(x1));
+        Vector2 p2 = new Vector2(x2, func.f(x2));
+
+        return Mathf.Abs(((1) * (p1.y - p0.y)) - ((p1.x - p0.x) * (p2.y - p1.y))) 
+                        / Mathf.Sqrt(2);
+    }
 }
 
 public struct LinearFunction {

@@ -37,8 +37,8 @@ public class UIManager : MonoBehaviour
     public int GRAPH_SCALING_DAYS_BACK = 260;
 
     float NEGATIVE_SLOPE_HUE = 0f;
-    float POSITIVE_SLOPE_HUE = 96f / 255f;
-    float SIGMOID_SCALING_CONST = 7f;
+    float POSITIVE_SLOPE_HUE = 126f / 360f;
+    float SIGMOID_SCALING_CONST = 10f;
 
     //holdings colors
     Color GREEN = new Color(0.344f, 1f, 0.491f);
@@ -170,9 +170,12 @@ public class UIManager : MonoBehaviour
         lineRenderer.SetPoints(points);
         LinearFunction fit = Calculator.FindLineOfBestFit(pointsToFit);
         lineBestFit.SetFunction(fit);
+        float StandardDeviationShiftDown = Calculator.StandardDeviationShiftDown(fit, pointsToFit);
+        GameObject.Find("TopSD").GetComponent<UILineRenderer>().SetFunction(new LinearFunction(fit.m, fit.b + StandardDeviationShiftDown));
+        GameObject.Find("BottomSD").GetComponent<UILineRenderer>().SetFunction(new LinearFunction(fit.m, fit.b - StandardDeviationShiftDown));
 
         float hue = Mathf.Lerp(POSITIVE_SLOPE_HUE, NEGATIVE_SLOPE_HUE, Sigmoid(fit.m * SIGMOID_SCALING_CONST));
-        lineBestFit.color = Color.HSVToRGB(hue, 0.57f, 0.70f);
+        lineBestFit.color = Color.HSVToRGB(hue, 0.75f, 1f);
         
         maxText.text = assetHolder.FancifyMoneyText(max);
         minText.text = assetHolder.FancifyMoneyText(min);
