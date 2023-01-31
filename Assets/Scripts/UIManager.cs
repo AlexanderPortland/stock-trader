@@ -20,6 +20,9 @@ public class UIManager : MonoBehaviour
     public List<GameObject> holdingsText;
     public UIGridRenderer gridRenderer;
     public UILineRenderer lineRenderer;
+    public UILineRenderer lineBestFit;
+    public UILineRenderer[] allLines;
+
     public TextMeshProUGUI valueText;
     public TextMeshProUGUI maxText;
     public TextMeshProUGUI minText;
@@ -33,6 +36,10 @@ public class UIManager : MonoBehaviour
     public int GRAPH_DAYS_BACK = 260; //260 for year, 130 for 6 months, 20 for month, 5 for week
     public int GRAPH_SCALING_DAYS_BACK = 260;
 
+    float NEGATIVE_SLOPE_HUE = 0f;
+    float POSITIVE_SLOPE_HUE = 96f / 255f;
+    float SIGMOID_SCALING_CONST = 7f;
+
     //holdings colors
     Color GREEN = new Color(0.344f, 1f, 0.491f);
     Color RED = new Color(1f, 0.345f, 0.443f);
@@ -45,7 +52,9 @@ public class UIManager : MonoBehaviour
         tickerManager = FindObjectOfType<TickerManager>();
         assetHolder = FindObjectOfType<AssetHolder>();
         gridRenderer = FindObjectOfType<UIGridRenderer>();
-        lineRenderer = FindObjectOfType<UILineRenderer>();
+        lineRenderer = GameObject.Find("MAIN").GetComponent<UILineRenderer>();
+        lineBestFit = GameObject.Find("BestFit").GetComponent<UILineRenderer>();
+        allLines = FindObjectsOfType<UILineRenderer>();
         holdingsText.Add(GameObject.Find("HoldingsText"));
 
         tickerManager.UpdateTextContent(stockDataManager.GetStockSummary());
@@ -140,22 +149,31 @@ public class UIManager : MonoBehaviour
         int today = stockDataManager.currentDay;
         int lastDayRender = Math.Min(s.days.Length - 1, today + GRAPH_DAYS_BACK);
         int lastDayCount = Math.Min(s.days.Length - 1, today + GRAPH_SCALING_DAYS_BACK);
+        List<Vector2> pointsToFit = new List<Vector2>();
         for(int i = today; i < lastDayCount; i++){
-            Debug.Log("counting day" + i);
             float close = s.days[i].close;
             if (close > max) max = close;
             if (close < min) min = close;
             if ((i - today) % GRAPH_RESOLUTION == 0 && i < lastDayRender){
-                Debug.Log("rendering day" + i);
+                pointsToFit.Add(new Vector2(i - today, close));
                 points.Add(new Vector2(i - today, close));
             }
         }
+        
+        foreach(UILineRenderer rend in allLines){
+            float unitHeight = rend.height / (max - min);
+            rend.maxY = max + (GRAPH_BUFFER / unitHeight);
+            rend.minY = Math.Max(min - (GRAPH_BUFFER / unitHeight), 0);
+            rend.maxX = lastDayRender - today - 1;
+            rend.minX = 0;
+        }
         lineRenderer.SetPoints(points);
-        float unitHeight = lineRenderer.height / (max - min);
-        lineRenderer.maxY = max + (GRAPH_BUFFER / unitHeight);
-        lineRenderer.minY = Math.Max(min - (GRAPH_BUFFER / unitHeight), 0);
-        lineRenderer.maxX = lastDayRender - today - 1;
-        lineRenderer.minX = 0;
+        LinearFunction fit = Calculator.FindLineOfBestFit(pointsToFit);
+        lineBestFit.SetFunction(fit);
+
+        float hue = Mathf.Lerp(POSITIVE_SLOPE_HUE, NEGATIVE_SLOPE_HUE, Sigmoid(fit.m * SIGMOID_SCALING_CONST));
+        lineBestFit.color = Color.HSVToRGB(hue, 0.57f, 0.70f);
+        
         maxText.text = assetHolder.FancifyMoneyText(max);
         minText.text = assetHolder.FancifyMoneyText(min);
 
@@ -170,13 +188,14 @@ public class UIManager : MonoBehaviour
 
         FixSizeOfPies();
         UpdatePies();
+        OnStockChange();
     }
 
     void FixSizeOfHoldingsText(){
         int i = assetHolder.holdings.Count;
         if (i > holdingsText.Count){
             for(int j = holdingsText.Count; j < i; j++){
-                Debug.Log("adding holding");
+                //Debug.Log("adding holding");
                 GameObject lead = holdingsText[0];
                 Vector3 position = 
                     new Vector3(lead.transform.position.x, 
@@ -187,7 +206,7 @@ public class UIManager : MonoBehaviour
         } else if (i == holdingsText.Count){
 
         } else if (i < holdingsText.Count){
-            Debug.Log("removing holding");
+            //Debug.Log("removing holding");
             for(int j = Math.Max(i, 1); j < holdingsText.Count; j++){ 
                 GameObject h = holdingsText[holdingsText.Count - 1];
                 holdingsText.RemoveAt(holdingsText.Count - 1);
@@ -255,9 +274,7 @@ public class UIManager : MonoBehaviour
 
         if (i > pies.Count){
             for(int j = pies.Count; j < i; j++){
-                Debug.Log("adding pie");
                 GameObject lead = pies[0];
-                Debug.Log(lead);
                 Vector3 position = lead.transform.position;
                 GameObject g = Instantiate(lead, position, lead.transform.rotation, lead.transform.parent);
                 pies.Add(g);
@@ -265,7 +282,6 @@ public class UIManager : MonoBehaviour
         } else if (i == pies.Count){
 
         } else if (i < pies.Count){
-            Debug.Log("removing pie");
             for(int j = Math.Max(i, 1); j < pies.Count; j++){ 
                 GameObject h = pies[pies.Count - 1];
                 unusedPieColors.Add(h.GetComponent<Image>().color);
@@ -307,12 +323,10 @@ public class UIManager : MonoBehaviour
                         pies[i].SetActive(true);
                         int index = UnityEngine.Random.Range((int)0, (int)unusedPieColors.Count);
                         pie.color = unusedPieColors[index];
-                        Debug.Log("setting color to " + unusedPieColors[index]);
                         unusedPieColors.RemoveAt(index);
                     }
                     
                     float myFill = values[i - 1] / totalValue;
-                    //Debug.Log(i + ", myfill: " + myFill + ", previous: " + valOfPrevious);
                     pie.fillAmount = valOfPrevious + myFill;
                     valOfPrevious += myFill;
                 } else {
@@ -339,5 +353,10 @@ public class UIManager : MonoBehaviour
             sum += nums[i];
         }
         return sum;
+    }
+
+    public static float Sigmoid(double value) {
+        float k = (float)Math.Exp(value);
+        return k / (1.0f + k);
     }
 }

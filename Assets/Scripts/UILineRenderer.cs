@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 public class UILineRenderer : Graphic
 {
-
     private Vector2 gridSize;
     [SerializeField]
     private List<Vector2> points;
@@ -24,6 +23,22 @@ public class UILineRenderer : Graphic
 
     public UILineRenderer(List<Vector2> points){
         this.points = points;
+    }
+
+    public UILineRenderer(LinearFunction func){
+        for(int i = 0; i < 10; i++){
+            Vector2 p = new Vector2(i, func.f(i));
+            points.Add(p);
+            Debug.Log(p);
+        }
+    }
+
+    public void SetFunction(LinearFunction func){
+        Debug.Log("setting function");
+        points = new List<Vector2>();
+        points.Add(new Vector2(0, func.f(0)));
+        points.Add(new Vector2(maxX, func.f(maxX)));
+        SetAllDirty();
     }
 
     protected override void OnPopulateMesh(VertexHelper vh){
