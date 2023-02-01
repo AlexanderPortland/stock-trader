@@ -25,7 +25,6 @@ public class Calculator : MonoBehaviour
         float m = (n * xy - (x * y)) / (n * xSqr - Mathf.Pow(x, 2));
         float b = (y - m * x) / n;
         LinearFunction f = new  LinearFunction(m, b);
-        Debug.Log(f);
         return f;
     }
 

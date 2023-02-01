@@ -12,6 +12,7 @@ public class StockDataManager : MonoBehaviour
     public int currentDay = 500;
     public UIManager uIManager;
     public AssetHolder assetHolder;
+    private Trader[] traders;
 
     float NEUTRAL_FLOW_THRESHOLD = 0.2f;
     string POSITIVE_FLOW_ICON = "▲";
@@ -23,7 +24,15 @@ public class StockDataManager : MonoBehaviour
         stocks = InitializeStocks(symbols);
         uIManager = FindObjectOfType<UIManager>();
         assetHolder = FindObjectOfType<AssetHolder>();
+        traders = FindObjectsOfType<Trader>();
         InitializeUI();
+        InitializeTraders();
+    }
+
+    public void InitializeTraders(){
+        foreach(Trader t in traders){
+            t.Initialize();
+        }
     }
 
     //parses data from data files and for accessability
@@ -90,6 +99,9 @@ public class StockDataManager : MonoBehaviour
 
     public void NextDay(){
         UpdateDay(currentDay - 1);
+        foreach(Trader t in traders){
+            t.MakeTrades();
+        }
     }
 
     public void UpdateDay(int newDay){

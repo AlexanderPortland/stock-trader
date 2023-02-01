@@ -161,8 +161,8 @@ public class UIManager : MonoBehaviour
             float close = s.days[i].close;
             if (close > max) max = close;
             if (close < min) min = close;
+            pointsToFit.Add(new Vector2(i - today, close));
             if ((i - today) % GRAPH_RESOLUTION == 0 && i < lastDayRender){
-                pointsToFit.Add(new Vector2(i - today, close));
                 points.Add(new Vector2(i - today, close));
             }
         }
@@ -176,9 +176,13 @@ public class UIManager : MonoBehaviour
             rend.minX = 0;
         }
         lineRenderer.SetPoints(points);
+
+        int index = Array.IndexOf(stockDataManager.symbols, symbol);
         LinearFunction fit = Calculator.FindLineOfBestFit(pointsToFit);
+        //LinearFunction fit = FindObjectOfType<LinearRegressionTrader>().functions[index];
         lineBestFit.SetFunction(fit);
         float StandardDeviation = Calculator.StandardDeviation(fit, pointsToFit);
+        //float StandardDeviation = FindObjectOfType<LinearRegressionTrader>().deviations[index];
         topSD.SetFunction(new LinearFunction(fit.m, fit.b + StandardDeviation));
         bottomSD.SetFunction(new LinearFunction(fit.m, fit.b - StandardDeviation));
 
@@ -186,7 +190,7 @@ public class UIManager : MonoBehaviour
         lineBestFit.color = Color.HSVToRGB(hue, 0.75f, 1f);
         float x = Mathf.Atan(1 / fit.m);
         float theta = ((float)Math.PI / 2) - x;
-        float shiftDown = StandardDeviation / (float)Math.Cos(theta);
+        float shiftDown = StandardDeviation; // (float)Math.Cos(theta);
         SDText.text = "standard deviation: $" + string.Format("{0:0.00}", StandardDeviation) + "\n ~= %" + string.Format("{0:0.00}", (100 * pointsToFit.Count * StandardDeviation) / (Sum(pointsToFit)));
         
         maxText.text = assetHolder.FancifyMoneyText(max);

@@ -9,6 +9,10 @@ public class AssetHolder : MonoBehaviour
     
     public float cash = 10000;
 
+    public AssetHolder(float cash){
+        this.cash = cash;
+    }
+
     public void Awake(){
         stockDataManager = FindObjectOfType<StockDataManager>();
     }
@@ -16,7 +20,6 @@ public class AssetHolder : MonoBehaviour
     public void Buy(string symbol, float quantity){
         float price = stockDataManager.FindStock(symbol).TryGetCloseOnDay(stockDataManager.currentDay);
         float totalPrice = price * quantity;
-        Debug.Log(symbol + ", " + quantity + ", " + price);
         if (totalPrice < 0) {
             Debug.Log("buy cancelled: no price found");
             return;
@@ -24,6 +27,7 @@ public class AssetHolder : MonoBehaviour
             Debug.Log("buy cancelled: not enough money to cover the transaction");
             return;
         }
+        Debug.Log(symbol + ", " + quantity + ", " + price);
         cash -= totalPrice;
         Holding h = new Holding(symbol, quantity, price);
         AddHolding(h);
@@ -49,6 +53,10 @@ public class AssetHolder : MonoBehaviour
 
         stockDataManager.uIManager.UpdateAssetsUI();
         stockDataManager.uIManager.quantityField.text = "";
+    }
+
+    public void SellAll(string symbol){
+        Sell(symbol, QuantityOfSymbol(symbol));
     }
 
     public string FancifyMoneyText(float amount){

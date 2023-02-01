@@ -34,7 +34,6 @@ public class UILineRenderer : Graphic
     }
 
     public void SetFunction(LinearFunction func){
-        Debug.Log("setting function");
         points = new List<Vector2>();
         points.Add(new Vector2(0, func.f(0)));
         points.Add(new Vector2(maxX, func.f(maxX)));
